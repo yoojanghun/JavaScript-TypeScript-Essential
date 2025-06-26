@@ -3,7 +3,8 @@
     "dev": "parcel index.html"
   },
   "dependencies": {
-    "colors": "^1.4.0"
+    "colors": "^1.4.0",
+    "stream": "^0.0.3"
   },
   "devDependencies": {
     "parcel-bundler": "^1.12.5"

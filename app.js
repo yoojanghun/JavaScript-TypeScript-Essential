@@ -1,6 +1,7 @@
 // HTTP 요청: 웹 브라우저나 프로그램이 서버에 "무언가 해달라"고 보내는 요청
 // GET(서버에서 데이터 가져오기), POST(서버에 새로운 데이터 보내기), DELETE(서버에 데이터 삭제하기) 등
 
+
 // API(Application Programming Interface): 서버가 외부에 제공하는 기능/데이터 출입구
 
 
@@ -14,10 +15,15 @@ const NEWS_URL = "https://api.hnpwa.com/v0/news/1.json";
 const CONTENT_URL = "https://api.hnpwa.com/v0/item/@id.json";
 const content = document.createElement("div");
 const container = document.getElementById("root");
-ajax.open("GET", NEWS_URL, false);
 
-// 실제로 서버에 요청을 보냄
-ajax.send();
+function getData(url) {
+    ajax.open("GET", url, false);
+    
+    // 실제로 서버에 요청을 보냄
+    ajax.send();
+
+    return JSON.parse(ajax.response);
+}
 
 // 응답 결과 (JSON 형식의 문자열)를 콘솔에 출력. 
 // JSON(Javascript Object Notation): 자바스크립트 객체 형식을 본뜬 "데이터 교환용 텍스트 형식"
@@ -25,32 +31,32 @@ ajax.send();
 // console.log(ajax.response);
 
 // JSON을 parse로 객체로 바꿈(JSON은 객체로 변환 가능)
-const newsFeed = JSON.parse(ajax.response);
+const newsFeed = getData(NEWS_URL);
 const ul = document.createElement("ul");
 
 window.addEventListener("hashchange", function() {
     const id = location.hash.substring(1);
 
-    ajax.open("GET", CONTENT_URL.replace("@id", id), false);
-    ajax.send();
-
-    const newsContent = JSON.parse(ajax.response);
+    const newsContent = getData(CONTENT_URL.replace("@id", id));
     const title = document.createElement("h1");
 
     title.textContent = newsContent.title;
 
     content.appendChild(title);
-})
+});
 
 for(let i = 0; i < 10; i++){
-    const li = document.createElement("li");
-    const a = document.createElement("a");
+    const div = document.createElement("div");
 
-    a.href = `#${newsFeed[i].id}`;
-    a.textContent = `${newsFeed[i].title} // comments num : ${newsFeed[i].comments_count}`;
-
-    ul.appendChild(li);
-    li.appendChild(a);
+    div.innerHTML = `
+        <li>
+            <a href="#${newsFeed[i].id}">
+                ${newsFeed[i].title} (${newsFeed[i].comments_count})
+            </a>
+        </li>
+    `;
+    
+    ul.appendChild(div.firstElementChild);
 }
 
 container.appendChild(ul);
