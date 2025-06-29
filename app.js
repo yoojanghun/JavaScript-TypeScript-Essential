@@ -31,33 +31,53 @@ function getData(url) {
 // console.log(ajax.response);
 
 // JSON을 parse로 객체로 바꿈(JSON은 객체로 변환 가능)
-const newsFeed = getData(NEWS_URL);
 const ul = document.createElement("ul");
 
-window.addEventListener("hashchange", function() {
+window.addEventListener("hashchange", router);
+
+router();
+function router() {
+    const routePath = location.hash;        // location.hash에 #만 들어있을 땐 ""를 반환함
+
+    if(routePath === "") {
+        newsFeed();
+    }
+    else{
+        newsDetail();
+    }
+}
+
+function newsFeed() {
+    const newsFeed = getData(NEWS_URL);
+    const newsList = [];
+    
+    newsList.push("<ul>");
+    
+    for(let i = 0; i < 10; i++){
+        newsList.push(`
+            <li>
+                <a href="#${newsFeed[i].id}">
+                    ${newsFeed[i].title} (${newsFeed[i].comments_count})
+                </a>
+            </li>
+        `);
+    }
+    
+    newsList.push("</ul>");
+    
+    container.innerHTML = newsList.join("");
+}
+
+function newsDetail() {
     const id = location.hash.substring(1);
 
     const newsContent = getData(CONTENT_URL.replace("@id", id));
-    const title = document.createElement("h1");
 
-    title.textContent = newsContent.title;
+    container.innerHTML = `
+        <h1>${newsContent.title}</h1>
 
-    content.appendChild(title);
-});
-
-for(let i = 0; i < 10; i++){
-    const div = document.createElement("div");
-
-    div.innerHTML = `
-        <li>
-            <a href="#${newsFeed[i].id}">
-                ${newsFeed[i].title} (${newsFeed[i].comments_count})
-            </a>
-        </li>
+        <div>
+            <a href="#">목록으로</a>
+        </div>
     `;
-    
-    ul.appendChild(div.firstElementChild);
 }
-
-container.appendChild(ul);
-container.appendChild(content);
