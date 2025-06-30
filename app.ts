@@ -7,15 +7,27 @@ type Store = {
     currentPage: number;
     feeds: NewsFeed[];      // NewsFeed 유형의 데이터가 들어가는 배열
 }
-type NewsFeed = {
+
+// tpye Alias에서 겹치는 것이 많다면 아래처럼 공통된 부분을 묶을 수 있다.
+type News = {
     id: number;
-    comments_count: number;
+    time_ago: string;
+    title: string;
     url: string;
     user: string;
-    time_ago: string;
+    content: string;
+}
+type NewsFeed = News & {
+    comments_count: number;
     points: number;
-    title: string;
     read?: boolean;         // 있을 때도 있고 없을 때도 있는 속성
+}
+type NewsDetail = News & {
+    comments: NewsComment[];
+}
+type NewsComment = News & {
+    comments: NewsComment[];
+    level: number;
 }
 
 const ajax: XMLHttpRequest = new XMLHttpRequest();
@@ -29,7 +41,9 @@ const store: Store = {
     feeds: []
 };
 
-function getData(url) {
+// 제너릭을 사용하여 함수가 전달할 return 값을 설정한다. (NewsFeed를 리턴할 지 아님 NewsDetail을 리턴할 지 결정함)
+// 호출부에서 반환받고 싶은 유형을 작성하면 그 유형을 받아서 그대로 getData에서 반환 유형으로 사용하는 것이 제너릭
+function getData<AjaxResponse>(url: string): AjaxResponse {
     ajax.open("GET", url, false);
     
     ajax.send();
@@ -108,7 +122,7 @@ function newsFeed() {
     `;
 
     if(newsFeed.length === 0) {
-        newsFeed = store.feeds = makeFeeds(getData(NEWS_URL));
+        newsFeed = store.feeds = makeFeeds(getData<NewsFeed[]>(NEWS_URL));
     }
     
     for(let i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++){
@@ -143,7 +157,7 @@ function newsFeed() {
 function newsDetail() {
     const id = location.hash.substring(7);
 
-    const newsContent = getData(CONTENT_URL.replace("@id", id));
+    const newsContent = getData<NewsDetail>(CONTENT_URL.replace("@id", id));
     let template = `
         <div class="bg-gray-600 min-h-screen pb-8">
             <div class="bg-white text-xl">
@@ -199,5 +213,5 @@ function newsDetail() {
         return commentString.join("");
     }
 
-    updateView(template);
+    updateView(template.replace('{{__comments__}}', makeComment(newsContent.comments)));
 }
