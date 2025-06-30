@@ -48,7 +48,7 @@ class Api {
     this.ajax.open('GET', this.url, false);
     this.ajax.send();
 
-    return JSON.parse(this.ajax.response);
+    return JSON.parse(this.ajax.response) as AjaxResponse;
   }
 }
 
